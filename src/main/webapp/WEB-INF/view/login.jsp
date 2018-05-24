@@ -52,6 +52,8 @@
     </form>
 
     <p>New users can register <a href="/register">here</a>.</p>
+    <p>Forgot password? click <a href="/register">here</a>.</p>
+
   </div>
 </body>
 </html>
