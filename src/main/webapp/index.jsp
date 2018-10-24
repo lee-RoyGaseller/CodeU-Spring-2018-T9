@@ -21,16 +21,7 @@
 </head>
 <body>
 
-  <nav>
-    <a id="navTitle" href="/">CodeU Chat App</a>
-    <a href="/conversations">Conversations</a>
-    <% if(request.getSession().getAttribute("user") != null){ %>
-      <a>Hello <%= request.getSession().getAttribute("user") %>!</a>
-    <% } else{ %>
-      <a href="/login">Login</a>
-    <% } %>
-    <a href="/about.jsp">About</a>
-  </nav>
+  <%@include file= "WEB-INF/view/navbar.jsp"%>
 
   <div id="container">
     <div
@@ -40,12 +31,10 @@
       
       <h2>Welcome to Team LAAPH's Chat App!</h2>
 
-      <p> We are LAAPH: Lee-Roy, Aaron, Anita, Padraic, and Henry of Team 9! </p>
+      <h3> We are LAAPH: Lee-Roy, Aaron, Anita, Padraic, and Henry of Team 9! </h3>
 
       <ul>
         <li><a href="/login">Login</a> to get started.</li>
-        <li>Go to the <a href="/conversations">conversations</a> page to
-            create or join a conversation.</li>
         <li>View the <a href="/about.jsp">about</a> page to learn more about the
             project.</li>
       </ul>

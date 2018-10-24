@@ -16,8 +16,11 @@ package codeu.controller;
 
 import codeu.model.data.Conversation;
 import codeu.model.data.User;
+import codeu.model.data.Activity;
+import codeu.model.data.Activity.ActivityType;
 import codeu.model.store.basic.ConversationStore;
 import codeu.model.store.basic.UserStore;
+import codeu.model.store.basic.ActivityStore;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ public class ConversationServletTest {
   private RequestDispatcher mockRequestDispatcher;
   private ConversationStore mockConversationStore;
   private UserStore mockUserStore;
+  private ActivityStore mockActivityStore;
 
   @Before
   public void setup() {
@@ -62,15 +66,19 @@ public class ConversationServletTest {
 
     mockUserStore = Mockito.mock(UserStore.class);
     conversationServlet.setUserStore(mockUserStore);
+
+    mockActivityStore = Mockito.mock(ActivityStore.class);
+    conversationServlet.setActivityStore(mockActivityStore);
   }
+
 
   @Test
   public void testDoGet() throws IOException, ServletException {
+    Mockito.when(mockSession.getAttribute("user")).thenReturn("testusername");
     List<Conversation> fakeConversationList = new ArrayList<>();
     fakeConversationList.add(
-        new Conversation(UUID.randomUUID(), UUID.randomUUID(), "test_conversation", Instant.now()));
+        new Conversation(UUID.randomUUID(), UUID.randomUUID(), "test_conversation", Instant.now(), false));
     Mockito.when(mockConversationStore.getAllConversations()).thenReturn(fakeConversationList);
-
     conversationServlet.doGet(mockRequest, mockResponse);
 
     Mockito.verify(mockRequest).setAttribute("conversations", fakeConversationList);
@@ -83,6 +91,8 @@ public class ConversationServletTest {
 
     conversationServlet.doPost(mockRequest, mockResponse);
 
+    Mockito.verify(mockActivityStore, Mockito.never()).addActivity(Mockito.any(Activity.class));
+
     Mockito.verify(mockConversationStore, Mockito.never())
         .addConversation(Mockito.any(Conversation.class));
     Mockito.verify(mockResponse).sendRedirect("/conversations");
@@ -94,6 +104,8 @@ public class ConversationServletTest {
     Mockito.when(mockUserStore.getUser("test_username")).thenReturn(null);
 
     conversationServlet.doPost(mockRequest, mockResponse);
+
+    Mockito.verify(mockActivityStore, Mockito.never()).addActivity(Mockito.any(Activity.class));
 
     Mockito.verify(mockConversationStore, Mockito.never())
         .addConversation(Mockito.any(Conversation.class));
@@ -109,11 +121,14 @@ public class ConversationServletTest {
         new User(
             UUID.randomUUID(),
             "test_username",
-            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6",
-            Instant.now());
+            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6", "team9chatapp@gmail.com",
+            Instant.now(),
+            false);
     Mockito.when(mockUserStore.getUser("test_username")).thenReturn(fakeUser);
 
     conversationServlet.doPost(mockRequest, mockResponse);
+
+    Mockito.verify(mockActivityStore, Mockito.never()).addActivity(Mockito.any(Activity.class));
 
     Mockito.verify(mockConversationStore, Mockito.never())
         .addConversation(Mockito.any(Conversation.class));
@@ -130,13 +145,16 @@ public class ConversationServletTest {
         new User(
             UUID.randomUUID(),
             "test_username",
-            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6",
-            Instant.now());
+            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6", "team9chatapp@gmail.com",
+            Instant.now(),
+            false);
     Mockito.when(mockUserStore.getUser("test_username")).thenReturn(fakeUser);
 
     Mockito.when(mockConversationStore.isTitleTaken("test_conversation")).thenReturn(true);
 
     conversationServlet.doPost(mockRequest, mockResponse);
+
+    Mockito.verify(mockActivityStore, Mockito.never()).addActivity(Mockito.any(Activity.class));
 
     Mockito.verify(mockConversationStore, Mockito.never())
         .addConversation(Mockito.any(Conversation.class));
@@ -152,8 +170,9 @@ public class ConversationServletTest {
         new User(
             UUID.randomUUID(),
             "test_username",
-            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6",
-            Instant.now());
+            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6", "team9chatapp@gmail.com",
+            Instant.now(),
+            false);
     Mockito.when(mockUserStore.getUser("test_username")).thenReturn(fakeUser);
 
     Mockito.when(mockConversationStore.isTitleTaken("test_conversation")).thenReturn(false);
@@ -164,6 +183,9 @@ public class ConversationServletTest {
         ArgumentCaptor.forClass(Conversation.class);
     Mockito.verify(mockConversationStore).addConversation(conversationArgumentCaptor.capture());
     Assert.assertEquals(conversationArgumentCaptor.getValue().getTitle(), "test_conversation");
+
+    ArgumentCaptor<Activity> activityArgumentCaptor = ArgumentCaptor.forClass(Activity.class);
+    Mockito.verify(mockActivityStore).addActivity(activityArgumentCaptor.capture());
 
     Mockito.verify(mockResponse).sendRedirect("/chat/test_conversation");
   }

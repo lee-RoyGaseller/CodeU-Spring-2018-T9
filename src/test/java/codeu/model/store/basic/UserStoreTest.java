@@ -20,20 +20,23 @@ public class UserStoreTest {
       new User(
           UUID.randomUUID(),
           "test_username_one",
-          "$2a$10$/zf4WlT2Z6tB5sULB9Wec.QQdawmF0f1SbqBw5EeJg5uoVpKFFXAa",
-          Instant.ofEpochMilli(1000));
+          "$2a$10$/zf4WlT2Z6tB5sULB9Wec.QQdawmF0f1SbqBw5EeJg5uoVpKFFXAa","team9chatapp@gmail.com",
+          Instant.ofEpochMilli(1000),
+          false);
   private final User USER_TWO =
       new User(
           UUID.randomUUID(),
           "test_username_two",
-          "$2a$10$lgZSbmcYyyC7bETcMo/O1uUltWYDK3DW1lrEjCumOE1u8QPMlzNVy",
-          Instant.ofEpochMilli(2000));
+          "$2a$10$lgZSbmcYyyC7bETcMo/O1uUltWYDK3DW1lrEjCumOE1u8QPMlzNVy", "fakeEmail@gmail.com",
+          Instant.ofEpochMilli(2000),
+          false);
   private final User USER_THREE =
       new User(
           UUID.randomUUID(),
           "test_username_three",
-          "$2a$10$htXz4E48iPprTexGsEeBFurXyCwW6F6aoiSBqotL4m0NBg/VSkB9.",
-          Instant.ofEpochMilli(3000));
+          "$2a$10$htXz4E48iPprTexGsEeBFurXyCwW6F6aoiSBqotL4m0NBg/VSkB9.", "fakeEmail2@gmail.com",
+          Instant.ofEpochMilli(3000),
+          false);
 
   @Before
   public void setup() {
@@ -81,14 +84,30 @@ public class UserStoreTest {
         new User(
             UUID.randomUUID(),
             "test_username",
-            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6",
-            Instant.now());
+            "$2a$10$eDhncK/4cNH2KE.Y51AWpeL8/5znNBQLuAFlyJpSYNODR/SJQ/Fg6","team9chatapp@gmail.com",
+            Instant.now(),
+            false);
 
     userStore.addUser(inputUser);
     User resultUser = userStore.getUser("test_username");
 
     assertEquals(inputUser, resultUser);
     Mockito.verify(mockPersistentStorageAgent).writeThrough(inputUser);
+  }
+
+  @Test
+  public void testGetTotalUsers() {
+    Integer resultSize = userStore.countTotalUsers();
+    Integer expectedResult = 3;
+
+    Assert.assertEquals(expectedResult, resultSize);
+  }
+
+  @Test
+  public void testGetLastUserIndex() {
+    User latestUser = userStore.getLastUserIndex();
+
+    Assert.assertEquals(USER_THREE, latestUser);
   }
 
   @Test
@@ -105,5 +124,6 @@ public class UserStoreTest {
     Assert.assertEquals(expectedUser.getId(), actualUser.getId());
     Assert.assertEquals(expectedUser.getName(), actualUser.getName());
     Assert.assertEquals(expectedUser.getCreationTime(), actualUser.getCreationTime());
+    Assert.assertEquals(expectedUser.getBio(), actualUser.getBio());
   }
 }

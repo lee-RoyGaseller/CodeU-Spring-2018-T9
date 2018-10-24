@@ -3,6 +3,9 @@ package codeu.model.store.persistence;
 import codeu.model.data.Conversation;
 import codeu.model.data.Message;
 import codeu.model.data.User;
+import codeu.model.data.Activity;
+import codeu.model.data.Activity.ActivityType;
+import codeu.model.data.ServerStartupTimes;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.Before;
@@ -45,13 +48,32 @@ public class PersistentStorageAgentTest {
   }
 
   @Test
+  public void testLoadActivitiesTrue() throws PersistentDataStoreException {
+    persistentStorageAgent.loadActivities(true);
+    Mockito.verify(mockPersistentDataStore).loadActivities(true);
+  }
+
+  @Test
+  public void testLoadActivitiesFalse() throws PersistentDataStoreException {
+    persistentStorageAgent.loadActivities(false);
+    Mockito.verify(mockPersistentDataStore).loadActivities(false);
+  }
+
+  @Test
+  public void testLoadServerStartupTimes() throws PersistentDataStoreException {
+    persistentStorageAgent.loadServerStartupTimes();
+    Mockito.verify(mockPersistentDataStore).loadServerStartupTimes();
+  }
+
+  @Test
   public void testWriteThroughUser() {
     User user =
         new User(
             UUID.randomUUID(),
             "test_username",
-            "$2a$10$5GNCbSPS1sqqM9.hdiE2hexn1w.vnNoR.CaHIztFEhdAD7h82tqX.",
-            Instant.now());
+            "$2a$10$5GNCbSPS1sqqM9.hdiE2hexn1w.vnNoR.CaHIztFEhdAD7h82tqX.", "team9chatapp@gmail.com",
+            Instant.now(),
+            false);
     persistentStorageAgent.writeThrough(user);
     Mockito.verify(mockPersistentDataStore).writeThrough(user);
   }
@@ -59,7 +81,7 @@ public class PersistentStorageAgentTest {
   @Test
   public void testWriteThroughConversation() {
     Conversation conversation =
-        new Conversation(UUID.randomUUID(), UUID.randomUUID(), "test_conversation", Instant.now());
+        new Conversation(UUID.randomUUID(), UUID.randomUUID(), "test_conversation", Instant.now(), false);
     persistentStorageAgent.writeThrough(conversation);
     Mockito.verify(mockPersistentDataStore).writeThrough(conversation);
   }
@@ -68,8 +90,24 @@ public class PersistentStorageAgentTest {
   public void testWriteThroughMessage() {
     Message message =
         new Message(
-            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "test content", Instant.now());
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "test content", Instant.now(), false);
     persistentStorageAgent.writeThrough(message);
     Mockito.verify(mockPersistentDataStore).writeThrough(message);
   }
+
+  @Test
+  public void testWriteThroughActivity() {
+    Activity activity =
+      new Activity(UUID.randomUUID(), 0, Instant.now(), "test_message", UUID.randomUUID(), "test_username", ActivityType.CONVERSATION, UUID.randomUUID(), "test_conversation_name", new double[4], 0);
+    persistentStorageAgent.writeThrough(activity);
+    Mockito.verify(mockPersistentDataStore).writeThrough(activity);
+  }
+
+  @Test
+  public void testWriteThroughServerStartupTimes() {
+    ServerStartupTimes serverStartupTimes = new ServerStartupTimes(UUID.randomUUID(), Instant.now(), Instant.now());
+    persistentStorageAgent.writeThrough(serverStartupTimes);
+    Mockito.verify(mockPersistentDataStore).writeThrough(serverStartupTimes);
+  }
+
 }

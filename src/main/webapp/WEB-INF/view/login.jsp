@@ -21,16 +21,7 @@
 </head>
 <body>
 
-  <nav>
-    <a id="navTitle" href="/">CodeU Chat App</a>
-    <a href="/conversations">Conversations</a>
-    <% if(request.getSession().getAttribute("user") != null){ %>
-      <a>Hello <%= request.getSession().getAttribute("user") %>!</a>
-    <% } else{ %>
-      <a href="/login">Login</a>
-    <% } %>
-    <a href="/about.jsp">About</a>
-  </nav>
+  <%@include file= "navbar.jsp"%>
 
   <div id="container">
     <h1>Login</h1>
@@ -52,6 +43,12 @@
     </form>
 
     <p>New users can register <a href="/register">here</a>.</p>
+    <p>Forgot password? click <a href="/forgotPassword">here</a>.</p>
   </div>
 </body>
+
+<script>
+    document.getElementById("username").focus();
+</script>
+
 </html>

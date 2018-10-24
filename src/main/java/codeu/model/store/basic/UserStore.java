@@ -79,6 +79,16 @@ public class UserStore {
     return null;
   }
 
+  public User getUserByEmail(String email) {
+    // This approach will be pretty slow if we have many users.
+    for (User user : users) {
+      if (user.getEmail().equals(email)) {
+        return user;
+      }
+    }
+    return null;
+  }
+
   /**
    * Access the User object with the given UUID.
    *
@@ -119,6 +129,23 @@ public class UserStore {
     return false;
   }
 
+  /** Return true if the given email is known to the application. */
+  public boolean isEmailRegistered(String userEmail) {
+    for (User user : users) {
+      if (user.getEmail().equals(userEmail)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Accesses the users stored
+   *  @return the size of the users
+   */
+  public Integer countTotalUsers() {
+    return users.size();
+  }
+
   /**
    * Sets the List of Users stored by this UserStore. This should only be called once, when the data
    * is loaded from Datastore.
@@ -126,5 +153,19 @@ public class UserStore {
   public void setUsers(List<User> users) {
     this.users = users;
   }
-}
 
+  /** Return latest User created */
+  public User getLastUserIndex(){
+    if(users == null || users.isEmpty()) {
+      return null;
+    }
+
+    int lastUser = users.size()-1;
+    return users.get(lastUser);
+  }
+
+  /** Returns the list of all Users by this UserStore. */
+  public List<User> getUsers() {
+    return users;
+  }
+}

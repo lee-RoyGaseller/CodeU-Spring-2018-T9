@@ -17,6 +17,9 @@ package codeu.model.store.persistence;
 import codeu.model.data.Conversation;
 import codeu.model.data.Message;
 import codeu.model.data.User;
+import codeu.model.data.Activity;
+import codeu.model.data.Activity.ActivityType;
+import codeu.model.data.ServerStartupTimes;
 import codeu.model.store.persistence.PersistentDataStore;
 import java.util.List;
 
@@ -79,6 +82,28 @@ public class PersistentStorageAgent {
     return persistentDataStore.loadConversations();
   }
 
+ /**
+   * Retrieve the ServerStartupTimes object from the Datastore service.
+   *
+   *@throws PersistentDataStoreException if an error was detected during the load from the
+   *	Datastore service
+   */
+
+  public ServerStartupTimes loadServerStartupTimes() throws PersistentDataStoreException {
+    return persistentDataStore.loadServerStartupTimes();
+  }
+
+ /**
+   * Retrieve all Activity Feed objects from the Datastore service. The returned list may be empty.
+   *
+   *@throws PersistentDataStoreException if an error was detected during the load from the
+   *	Datastore service
+   */
+
+  public List<Activity> loadActivities(boolean newDay) throws PersistentDataStoreException {
+    return persistentDataStore.loadActivities(newDay);
+  }
+
   /**
    * Retrieve all Message objects from the Datastore service. The returned list may be empty.
    *
@@ -102,5 +127,15 @@ public class PersistentStorageAgent {
   /** Write a Conversation object to the Datastore service. */
   public void writeThrough(Message message) {
     persistentDataStore.writeThrough(message);
+  }
+
+  /** Write an Activity object to the Datastore service. */
+  public void writeThrough(Activity activity) {
+    persistentDataStore.writeThrough(activity);
+  }
+
+  /** Write a ServerStartupTimes object to the Datastore service. */
+  public void writeThrough(ServerStartupTimes serverStartupTimes) {
+    persistentDataStore.writeThrough(serverStartupTimes);
   }
 }

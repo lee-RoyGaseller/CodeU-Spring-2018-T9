@@ -85,8 +85,38 @@ public class MessageStore {
     return messagesInConversation;
   }
 
+  /** Accesses the messages stored
+   *  @return the size of the messages
+   */
+  public Integer countTotalMessages() {
+    return messages.size();
+  }
+
   /** Sets the List of Messages stored by this MessageStore. */
   public void setMessages(List<Message> messages) {
     this.messages = messages;
+  }
+
+  /** Returns the list of Messages that were sent by a given User. */
+  public List<Message> getMessagesOfUser(UUID author) {
+    List<Message> sentMessages = new ArrayList<>();
+
+    for (Message message: messages) {
+      if (message.getAuthorId().equals(author)) {
+        sentMessages.add(message);
+      }
+    }
+    return sentMessages;
+  }
+
+  /** Return latest message created */
+  public Message getLastMessageIndex(){
+
+    if(messages == null || messages.isEmpty()) {
+      return null;
+    }
+
+    int lastMessage = messages.size()-1;
+    return messages.get(lastMessage);
   }
 }

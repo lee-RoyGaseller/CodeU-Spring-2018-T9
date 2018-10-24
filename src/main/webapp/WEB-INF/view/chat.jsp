@@ -17,6 +17,7 @@
 <%@ page import="codeu.model.data.Conversation" %>
 <%@ page import="codeu.model.data.Message" %>
 <%@ page import="codeu.model.store.basic.UserStore" %>
+<%@ page import="codeu.model.data.Utils" %>
 <%
 Conversation conversation = (Conversation) request.getAttribute("conversation");
 List<Message> messages = (List<Message>) request.getAttribute("messages");
@@ -28,53 +29,94 @@ List<Message> messages = (List<Message>) request.getAttribute("messages");
   <title><%= conversation.getTitle() %></title>
   <link rel="stylesheet" href="/css/main.css" type="text/css">
 
-  <style>
-    #chat {
-      background-color: white;
-      height: 500px;
-      overflow-y: scroll
-    }
-  </style>
-
-  <script>
-    // scroll the chat div to the bottom
-    function scrollChat() {
-      var chatDiv = document.getElementById('chat');
-      chatDiv.scrollTop = chatDiv.scrollHeight;
-    };
-  </script>
+  <%@include file= "chatbox.jsp"%>
 </head>
 <body onload="scrollChat()">
 
-  <nav>
-    <a id="navTitle" href="/">CodeU Chat App</a>
-    <a href="/conversations">Conversations</a>
-      <% if (request.getSession().getAttribute("user") != null) { %>
-    <a>Hello <%= request.getSession().getAttribute("user") %>!</a>
-    <% } else { %>
-      <a href="/login">Login</a>
-    <% } %>
-    <a href="/about.jsp">About</a>
-  </nav>
+  <%@include file= "navbar.jsp"%>
+
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+  <!-- Check for nulls, etc when it works -->
+  <p hidden id="conversationID"><%= conversation.getId() %></p>
+  <p hidden id="messagesSize"><%= messages.size() %></p>
+
+  <script>
+      //Create interval in which each ajax call will be fired, 1000 = 1 second
+      var interval = 1000;
+      //Get conversation ID
+      var conversationID = $("#conversationID").text();
+      //Get messages shown since the last refresh/get request
+      var messagesSize = $("#messagesSize").text();
+      var jsonSize = 0;
+
+      function getNewMessages() { //when refresh button is clicked call function
+          //Make get request to ajaxTest servlet, and execute function with Ajax responseJson
+          $.get("/ajaxTest/" + conversationID + "/" + messagesSize, function (responseJson) {
+              //Select the unorderedList where I want to append new messages
+              var $ul = $("#unorderedMessageList");
+              jsonSize = responseJson.length;
+              //Iterate through responseJson with new messages
+              $.each(responseJson, function(index, message) {
+
+                  var result = "<li><strong><a href=/users/";
+                  result += message.author;
+                  result += " >";
+                  result += message.author;
+                  result += "</a>: </strong>";
+                  result += message.content;
+                  result += "<small><sub> ";
+                  result += message.creation;
+                  result += "</sub></small></li>";
+
+                  //Append them
+                  $($ul).append(result);
+              });
+              //Update messagesSize to the pastSize + theSize of new added messages, at the end of ajaxRequest
+              messagesSize = +messagesSize + jsonSize;
+          });
+          //After finishing previous ajaxCall, schedule the next one
+          setTimeout(getNewMessages, interval);
+      };
+
+    //Initiate ajax call
+    setTimeout(getNewMessages, interval);
+  </script>
+
+  <body>
 
   <div id="container">
 
     <h1><%= conversation.getTitle() %>
+
       <a href="" style="float: right">&#8635;</a></h1>
 
     <hr/>
 
     <div id="chat">
-      <ul>
+
+      <ul id="unorderedMessageList">
+
     <%
       for (Message message : messages) {
-        String author = UserStore.getInstance()
-          .getUser(message.getAuthorId()).getName();
+        String author = UserStore.getInstance().getUser(message.getAuthorId()).getName();
+
+        String url = "/users/";
+        url += author;
+
+        String messageHour = Utils.getTime(message.getCreationTime());
+        messageHour = messageHour.substring(messageHour.length()-8);
     %>
-      <li><strong><%= author %>:</strong> <%= message.getContent() %></li>
+
+        <li><strong> <a href=<%= url %> > <%= author%></a>: </strong> <%= message.getContent() %> <small><sub> <%= messageHour %></sub></small></li>
+
     <%
       }
-    %>
+     %>
+
+        <!-- Insert here new array with messages from ajax and add the ones not added yet -->
+
+
       </ul>
     </div>
 
@@ -82,7 +124,7 @@ List<Message> messages = (List<Message>) request.getAttribute("messages");
 
     <% if (request.getSession().getAttribute("user") != null) { %>
     <form action="/chat/<%= conversation.getTitle() %>" method="POST">
-        <input type="text" name="message">
+        <input type="text" name="message" id="sendMessage">
         <br/>
         <button type="submit">Send</button>
     </form>
@@ -91,8 +133,13 @@ List<Message> messages = (List<Message>) request.getAttribute("messages");
     <% } %>
 
     <hr/>
-
+    <br></br>
   </div>
 
 </body>
+
+<script>
+    document.getElementById("sendMessage").focus();
+</script>
+
 </html>

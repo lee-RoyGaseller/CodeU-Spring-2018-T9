@@ -75,8 +75,10 @@ public class LoginServletTest {
         new User(
             UUID.randomUUID(),
             "test username",
-            "$2a$10$.e.4EEfngEXmxAO085XnYOmDntkqod0C384jOR9oagwxMnPNHaGLa",
-            Instant.now());
+            "$2a$10$.e.4EEfngEXmxAO085XnYOmDntkqod0C384jOR9oagwxMnPNHaGLa","team9chatapp@gmail.com",
+
+            Instant.now(),
+            false);
 
     Mockito.when(mockRequest.getParameter("username")).thenReturn("test username");
     Mockito.when(mockRequest.getParameter("password")).thenReturn("test password");

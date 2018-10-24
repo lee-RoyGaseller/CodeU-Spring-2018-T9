@@ -17,6 +17,7 @@ package codeu.model.store.basic;
 import codeu.model.data.Conversation;
 import codeu.model.store.persistence.PersistentStorageAgent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -58,15 +59,23 @@ public class ConversationStore {
   /** The in-memory list of Conversations. */
   private List<Conversation> conversations;
 
+  /** The in-memory activity feed conversation. */
+  private Conversation actFeedConversation;
+
   /** This class is a singleton, so its constructor is private. Call getInstance() instead. */
   private ConversationStore(PersistentStorageAgent persistentStorageAgent) {
     this.persistentStorageAgent = persistentStorageAgent;
     conversations = new ArrayList<>();
   }
 
-/** Access the current set of conversations known to the application. */
+	/** Access the current set of conversations known to the application. */
   public List<Conversation> getAllConversations() {
     return conversations;
+  }
+
+	/** Access the activity feed conversation known to the application. */
+  public Conversation getActFeedConversation() {
+    return actFeedConversation;
   }
 
   /** Add a new conversation to the current set of conversations known to the application. */
@@ -96,8 +105,26 @@ public class ConversationStore {
     return null;
   }
 
+  /** Accesses the conversations stored
+   *  @return the size of conversations list
+   */
+  public Integer countTotalConversations() {
+    return conversations.size();
+  }
+
   /** Sets the List of Conversations stored by this ConversationStore. */
   public void setConversations(List<Conversation> conversations) {
     this.conversations = conversations;
   }
+
+  /** Return latest conversation created */
+  public Conversation getLastConversationIndex(){
+    if(conversations == null || conversations.isEmpty()) {
+      return null;
+    }
+
+    int lastConversation = conversations.size()-1;
+    return conversations.get(lastConversation);
+  }
+
 }

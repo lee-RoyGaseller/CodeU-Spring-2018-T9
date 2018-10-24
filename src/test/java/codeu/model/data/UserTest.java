@@ -16,6 +16,7 @@ package codeu.model.data;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,13 +27,18 @@ public class UserTest {
     UUID id = UUID.randomUUID();
     String name = "test_username";
     String passwordHash = "$2a$10$bBiLUAVmUFK6Iwg5rmpBUOIBW6rIMhU1eKfi3KR60V9UXaYTwPfHy";
+    String email = "team9chatapp@gmail.com";
     Instant creation = Instant.now();
+    Boolean admin = false;
 
-    User user = new User(id, name, passwordHash, creation);
+    User user = new User(id, name, passwordHash, email, creation, admin);
 
     Assert.assertEquals(id, user.getId());
     Assert.assertEquals(name, user.getName());
     Assert.assertEquals(passwordHash, user.getPasswordHash());
+    Assert.assertEquals(email, user.getEmail());
     Assert.assertEquals(creation, user.getCreationTime());
+    Assert.assertEquals(name + " hasn't written a bio yet.", user.getBio());
+    Assert.assertEquals(false, user.isAdmin());
   }
 }

@@ -15,6 +15,12 @@
 --%>
 <%@ page import="java.util.List" %>
 <%@ page import="codeu.model.data.Conversation" %>
+<%@ page import="codeu.model.store.basic.UserStore" %>
+<%@ page import="codeu.model.data.Utils" %>
+<%
+/** Gets the UserStore instance to access all users. */
+UserStore userStore = UserStore.getInstance();
+%>
 
 <!DOCTYPE html>
 <html>
@@ -24,29 +30,26 @@
 </head>
 <body>
 
-  <nav>
-    <a id="navTitle" href="/">CodeU Chat App</a>
-    <a href="/conversations">Conversations</a>
-    <% if(request.getSession().getAttribute("user") != null){ %>
-      <a>Hello <%= request.getSession().getAttribute("user") %>!</a>
-    <% } else{ %>
-      <a href="/login">Login</a>
-    <% } %>
-    <a href="/about.jsp">About</a>
-  </nav>
+  <%@include file= "navbar.jsp"%>
 
   <div id="container">
+    <div id="inside-container">
 
     <% if(request.getAttribute("error") != null){ %>
         <h2 style="color:red"><%= request.getAttribute("error") %></h2>
     <% } %>
 
-    <% if(request.getSession().getAttribute("user") != null){ %>
-      <h1>New Conversation</h1>
+    <h1>Conversations</h1>
+
+    <%
+    String currentUser = (String) request.getSession().getAttribute("user");
+    User currUser = userStore.getUser(currentUser);
+    if (currUser != null) { %>
+      <h2>Create a new conversation</h2>
       <form action="/conversations" method="POST">
           <div class="form-group">
             <label class="form-control-label">Title:</label>
-          <input type="text" name="conversationTitle">
+          <input type="text" name="conversationTitle" id="newConversation">
         </div>
 
         <button type="submit">Create</button>
@@ -54,9 +57,6 @@
 
       <hr/>
     <% } %>
-
-    <h1>Conversations</h1>
-
     <%
     List<Conversation> conversations =
       (List<Conversation>) request.getAttribute("conversations");
@@ -66,14 +66,31 @@
     <%
     }
     else{
-    %>
-      <ul class="mdl-list">
-    <%
+      // displays private conversations for user logged in
+      %>
+          <h2>Direct Messages</h2>
+      <%
+      List<String> pals = currUser.getPals();
+      for (String pal: pals) {
+          String url = Utils.getPrivateConversationURL(currentUser, pal);
+          %>
+          <li><a href="/chat/<%= url %>">
+          Chat with <%= pal %> </a></li>
+          <%
+      }
+
+      // displays public conversations for everyone
+      %>
+          <h2>Public Conversations</h2>
+      <%
       for(Conversation conversation : conversations){
+        // only display conversations that are not private
+        if (!conversation.getPrivate()) {
     %>
       <li><a href="/chat/<%= conversation.getTitle() %>">
         <%= conversation.getTitle() %></a></li>
     <%
+        }
       }
     %>
       </ul>
@@ -81,6 +98,13 @@
     }
     %>
     <hr/>
+    <br></br>
+  </div>
   </div>
 </body>
+
+<script>
+    document.getElementById("newConversation").focus();
+</script>
+
 </html>

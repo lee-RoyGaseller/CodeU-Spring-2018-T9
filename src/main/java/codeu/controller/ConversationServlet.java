@@ -16,8 +16,11 @@ package codeu.controller;
 
 import codeu.model.data.Conversation;
 import codeu.model.data.User;
+import codeu.model.data.Activity;
+import codeu.model.data.Activity.ActivityType;
 import codeu.model.store.basic.ConversationStore;
 import codeu.model.store.basic.UserStore;
+import codeu.model.store.basic.ActivityStore;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
@@ -36,6 +39,9 @@ public class ConversationServlet extends HttpServlet {
   /** Store class that gives access to Conversations. */
   private ConversationStore conversationStore;
 
+  /** Store class that gives access to Activity. */
+  private ActivityStore activityStore;
+
   /**
    * Set up state for handling conversation-related requests. This method is only called when
    * running in a server, not when running in a test.
@@ -45,6 +51,7 @@ public class ConversationServlet extends HttpServlet {
     super.init();
     setUserStore(UserStore.getInstance());
     setConversationStore(ConversationStore.getInstance());
+    setActivityStore(ActivityStore.getInstance());
   }
 
   /**
@@ -64,12 +71,29 @@ public class ConversationServlet extends HttpServlet {
   }
 
   /**
+   * Sets the ConversationStore used by this servlet. This function provides a common setup method
+   * for use by the test framework or the servlet's init() function.
+   */
+  void setActivityStore(ActivityStore activityStore) {
+    this.activityStore = activityStore;
+  }
+
+  /**
    * This function fires when a user navigates to the conversations page. It gets all of the
    * conversations from the model and forwards to conversations.jsp for rendering the list.
    */
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response)
       throws IOException, ServletException {
+
+
+    String username = (String) request.getSession().getAttribute("user");
+    if (username == null) {
+      // user is not logged in, don't let them create a conversation
+      response.sendRedirect("/login");
+      return;
+    }
+
     List<Conversation> conversations = conversationStore.getAllConversations();
     request.setAttribute("conversations", conversations);
     request.getRequestDispatcher("/WEB-INF/view/conversations.jsp").forward(request, response);
@@ -114,9 +138,13 @@ public class ConversationServlet extends HttpServlet {
     }
 
     Conversation conversation =
-        new Conversation(UUID.randomUUID(), user.getId(), conversationTitle, Instant.now());
+        new Conversation(UUID.randomUUID(), user.getId(), conversationTitle, Instant.now(), false);
 
     conversationStore.addConversation(conversation);
+
+    Activity activity = new Activity(UUID.randomUUID(), 1, Instant.now(), "started a new ", user.getId(), user.getName(), ActivityType.CONVERSATION, conversation.getId(), conversation.getTitle(), new double[4], 0);
+    activityStore.addActivity(activity);
+
     response.sendRedirect("/chat/" + conversationTitle);
   }
 }
